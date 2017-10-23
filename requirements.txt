@@ -1,0 +1,5 @@
+pytest # tests framework
+Flask # microservice framework
+flask-cors # CORs support
+logzero # logging
+flask-restful # design easy RESTful APIs
