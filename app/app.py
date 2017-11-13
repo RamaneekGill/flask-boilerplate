@@ -3,7 +3,6 @@ App boilerplate
 """
 
 import os
-
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_restful import reqparse, abort, Api, Resource
@@ -16,9 +15,6 @@ TASKS = {  # Collection of Models
     'task2': {'task': '?????'},
     'task3': {'task': 'profit!'},
 }
-
-PARSER = reqparse.RequestParser()
-PARSER.add_argument('task')  # task is now always required in a request
 
 
 def abort_if_task_doesnt_exist(task_id):
@@ -46,6 +42,12 @@ def create_app(config=None):
 
     class TasksAPI(Resource):
         """APIs for a single Tasks"""
+        def __init__(self):
+            self.reqparse = reqparse.RequestParser()
+            self.reqparse.add_argument('task', type=str, required=True,
+                                       help='No `task` provided', location='json')
+            super(TasksAPI, self).__init__()
+
         def get(self, task_id):
             """GET a task"""
             abort_if_task_doesnt_exist(task_id)
@@ -59,20 +61,26 @@ def create_app(config=None):
 
         def put(self, task_id):
             """Update a task"""
-            args = PARSER.parse_args()
+            args = self.reqparse.parse_args()
             task = {'task': args['task']}
             TASKS[task_id] = task
             return task, 201
 
     class TasksListAPI(Resource):
         """APIs for a list of Tasks"""
+        def __init__(self):
+            self.reqparse = reqparse.RequestParser()
+            self.reqparse.add_argument('task', type=str, required=True,
+                                       help='No `task` provided', location='json')
+            super(TasksListAPI, self).__init__()
+
         def get(self):
             """Get a list of all Tasks"""
             return TASKS
 
         def post(self):
             """Create a new Task"""
-            args = PARSER.parse_args()
+            args = self.reqparse.parse_args()
             task_id = int(max(TASKS.keys()).lstrip('task')) + 1
             task_id = 'task{}'.format(task_id)
             TASKS[task_id] = {'task': args['task']}
